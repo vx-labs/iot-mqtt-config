@@ -7,7 +7,8 @@ type Schema struct {
 	TLS        TLSSchema
 }
 type TLSSchema struct {
-	CN string `json:"cn"`
+	CN                      string `json:"cn"`
+	LetsEncryptAccountEmail string `json:"le_email"`
 }
 type CloudflareSchema struct {
 	APIToken     string `json:"api_token"`
@@ -16,6 +17,7 @@ type CloudflareSchema struct {
 
 func (*TLSSchema) Template() string {
 	tpl := `{{ "TLS Configuration" | green | bold }}
+  {{ "Letsencrypt account email" | faint }}: {{ .LetsEncryptAccountEmail }}
   {{ "CN" | faint }}: {{ .CN }}`
 	return fmt.Sprintf("%s\n", tpl)
 }

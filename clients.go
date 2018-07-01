@@ -3,13 +3,40 @@ package config
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	consul "github.com/hashicorp/consul/api"
 	vault "github.com/hashicorp/vault/api"
 )
+
+func loadVaultToken(api *vault.Client) {
+	fallback := func() {
+		api.SetToken(os.Getenv("VAULT_TOKEN"))
+	}
+	_, err := os.Stat("secrets/vault_token")
+	if err != nil {
+		fallback()
+		return
+	}
+	token, err := ioutil.ReadFile("secrets/vault_token")
+	if err != nil {
+		fallback()
+		return
+	}
+	api.SetToken(string(token))
+	go func() {
+		sigUsr1 := make(chan os.Signal, 1)
+		signal.Notify(sigUsr1, syscall.SIGUSR1)
+		<-sigUsr1
+		log.Println("INFO: received SIGUSR1, reloading vault token")
+		loadVaultToken(api)
+	}()
+}
 
 func wait(name string, retries int, test func() bool) error {
 	ticker := time.NewTicker(5 * time.Second)
@@ -59,6 +86,6 @@ func DefaultClients() (*consul.Client, *vault.Client, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	vaultAPI.SetToken(os.Getenv("VAULT_TOKEN"))
+	loadVaultToken(vaultAPI)
 	return consulAPI, vaultAPI, nil
 }

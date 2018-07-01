@@ -17,6 +17,23 @@ func Template(tpl string) (*template.Template, error) {
 	return template.New("").Funcs(promptui.FuncMap).Parse(tpl)
 }
 
+func Authentication(api *vault.Client) *cobra.Command {
+	return &cobra.Command{
+		Use:   "authentication",
+		Short: "display authentication configuration",
+		Run: func(cmd *cobra.Command, _ []string) {
+			auth, err := config.Authentication(api)
+			if err != nil {
+				log.Fatalf("failed to get authentication config key: %v", err)
+			}
+			tpl, err := Template(auth.Template())
+			if err != nil {
+				log.Fatal(err)
+			}
+			tpl.Execute(cmd.OutOrStdout(), auth)
+		},
+	}
+}
 func TLS(api *consul.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:   "tls",
@@ -68,6 +85,7 @@ func main() {
 		Short: "common configuration keys for platform operators",
 	}
 	cmd.AddCommand(CloudFlare(vaultAPI))
+	cmd.AddCommand(Authentication(vaultAPI))
 	cmd.AddCommand(TLS(consulAPI))
 	cmd.Execute()
 }

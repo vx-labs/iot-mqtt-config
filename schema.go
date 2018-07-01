@@ -15,6 +15,15 @@ type CloudflareSchema struct {
 	EmailAddress string `json:"email"`
 }
 
+type AuthenticationSchema struct {
+	StaticTokens []string `json:"static_tokens"`
+}
+
+func (*AuthenticationSchema) Template() string {
+	tpl := `{{ "Authentication Configuration" | green | bold }}
+  {{ "Static tokens" | faint }}: {{ .StaticTokens }}`
+	return fmt.Sprintf("%s\n", tpl)
+}
 func (*TLSSchema) Template() string {
 	tpl := `{{ "TLS Configuration" | green | bold }}
   {{ "Letsencrypt account email" | faint }}: {{ .LetsEncryptAccountEmail }}

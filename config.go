@@ -24,6 +24,18 @@ func configKey(key string) string {
 	return fmt.Sprintf("%s/%s", ConfigPrefix, key)
 }
 
+func Authentication(api *vault.Client) (AuthenticationSchema, error) {
+	out := struct {
+		Data AuthenticationSchema `json:"data"`
+	}{}
+	req := api.NewRequest("GET", "/v1/secret/data/mqtt/authentication")
+	resp, err := api.RawRequest(req)
+	if err != nil {
+		return out.Data, err
+	}
+	defer resp.Body.Close()
+	return out.Data, resp.DecodeJSON(&out)
+}
 func Cloudflare(api *vault.Client) (CloudflareSchema, error) {
 	out := struct {
 		Data CloudflareSchema `json:"data"`

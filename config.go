@@ -36,6 +36,20 @@ func Cloudflare(api *vault.Client) (CloudflareSchema, error) {
 	defer resp.Body.Close()
 	return out.Data, resp.DecodeJSON(&out)
 }
+
+type Unlocker interface {
+	Unlock() error
+	Destroy() error
+}
+
+func Lock(api *consul.Client, key string) (Unlocker, error) {
+	lock, err := api.LockKey(configKey(key))
+	if err != nil {
+		return nil, err
+	}
+	lock.Lock(nil)
+	return lock, nil
+}
 func watchKey(api *consul.Client, index uint64, key string) <-chan struct{} {
 	ch := make(chan struct{})
 	go func() {

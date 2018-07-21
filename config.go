@@ -101,3 +101,21 @@ func TLS(api *consul.Client) (TLSSchema, <-chan struct{}, error) {
 	ch := watchKey(api, meta.LastIndex, key)
 	return out, ch, nil
 }
+func HTTP(api *consul.Client) (HTTPSchema, <-chan struct{}, error) {
+	opts := &consul.QueryOptions{}
+	out := HTTPSchema{}
+	key := configKey("http")
+	pair, meta, err := api.KV().Get(key, opts)
+	if err != nil {
+		return out, nil, err
+	}
+	if pair == nil {
+		return out, nil, errors.New("key not found")
+	}
+	err = json.Unmarshal(pair.Value, &out)
+	if err != nil {
+		return out, nil, err
+	}
+	ch := watchKey(api, meta.LastIndex, key)
+	return out, ch, nil
+}

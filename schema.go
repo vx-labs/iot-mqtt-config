@@ -5,6 +5,10 @@ import "fmt"
 type Schema struct {
 	Cloudflare CloudflareSchema
 	TLS        TLSSchema
+	HTTP       HTTPSchema
+}
+type HTTPSchema struct {
+	Proxy string `json:"proxy"`
 }
 type TLSSchema struct {
 	CN                      string `json:"cn"`
@@ -34,5 +38,10 @@ func (*CloudflareSchema) Template() string {
 	tpl := `{{ "Cloudflare Configuration" | green | bold }}
   {{ "Email" | faint }}: {{ .EmailAddress }}
   {{ "API Token" | faint }}: {{ .APIToken }}`
+	return fmt.Sprintf("%s\n", tpl)
+}
+func (*HTTPSchema) Template() string {
+	tpl := `{{ "HTTP Configuration" | green | bold }}
+  {{ "Proxy" | faint }}: {{ .Proxy }}`
 	return fmt.Sprintf("%s\n", tpl)
 }

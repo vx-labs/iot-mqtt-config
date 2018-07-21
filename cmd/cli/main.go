@@ -34,6 +34,23 @@ func Authentication(api *vault.Client) *cobra.Command {
 		},
 	}
 }
+func HTTP(api *consul.Client) *cobra.Command {
+	return &cobra.Command{
+		Use:   "http",
+		Short: "display http configuration keys",
+		Run: func(cmd *cobra.Command, _ []string) {
+			tls, _, err := config.HTTP(api)
+			if err != nil {
+				log.Fatalf("failed to get http config key: %v", err)
+			}
+			tpl, err := Template(tls.Template())
+			if err != nil {
+				log.Fatal(err)
+			}
+			tpl.Execute(cmd.OutOrStdout(), tls)
+		},
+	}
+}
 func TLS(api *consul.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:   "tls",
@@ -87,5 +104,6 @@ func main() {
 	cmd.AddCommand(CloudFlare(vaultAPI))
 	cmd.AddCommand(Authentication(vaultAPI))
 	cmd.AddCommand(TLS(consulAPI))
+	cmd.AddCommand(HTTP(consulAPI))
 	cmd.Execute()
 }

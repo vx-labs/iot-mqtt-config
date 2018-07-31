@@ -60,6 +60,9 @@ func consulWaiter(api *consul.Client) func() bool {
 }
 
 func discoverVaultAddr(client *consul.Client) string {
+	if addr := os.Getenv("VAULT_ADDR"); addr != "" {
+		return addr
+	}
 	opt := &consul.QueryOptions{}
 	services, _, err := client.Health().Service("vault", "active", true, opt)
 	if err != nil {

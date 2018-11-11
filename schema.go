@@ -21,11 +21,13 @@ type CloudflareSchema struct {
 
 type AuthenticationSchema struct {
 	StaticTokens []string `json:"static_tokens"`
+	SigningToken string   `json:"signing_token"`
 }
 
 func (*AuthenticationSchema) Template() string {
 	tpl := `{{ "Authentication Configuration" | green | bold }}
-  {{ "Static tokens" | faint }}: {{ .StaticTokens }}`
+  {{ "Static tokens" | faint }}: {{ .StaticTokens }}
+  {{ "Signing token" | faint }}: {{ .SigningToken }}`
 	return fmt.Sprintf("%s\n", tpl)
 }
 func (*TLSSchema) Template() string {
